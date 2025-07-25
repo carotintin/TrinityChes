@@ -14,6 +14,8 @@ public:
 	void Update();
 
 private:
+	void ExploleArea();
+
 	CBoard*  m_Board;	
 
 	CPiece* m_Pieces[PIECE_NUM];	//‚U‘Ì•ª‚Ì‹î

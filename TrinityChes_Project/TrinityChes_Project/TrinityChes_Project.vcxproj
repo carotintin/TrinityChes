@@ -135,6 +135,7 @@
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameManeger.h" />
+    <ClInclude Include="KeyBoard.h" />
     <ClInclude Include="King.h" />
     <ClInclude Include="Piece.h" />
     <ClInclude Include="Player.h" />
@@ -149,6 +150,7 @@
     <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameManeger.cpp" />
+    <ClCompile Include="KeyBoard.cpp" />
     <ClCompile Include="King.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Piece.cpp" />

@@ -44,3 +44,8 @@ void CGameManeger::Update()
 {
 
 }
+
+void CGameManeger::ExploleArea()
+{
+
+}

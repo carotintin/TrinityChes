@@ -17,6 +17,8 @@ public:
 
 	void Move(int, int);
 
+	void GetPos(int*, int*);
+
 protected:
 	PLAYER_ID m_ID;
 	float m_PosX;
