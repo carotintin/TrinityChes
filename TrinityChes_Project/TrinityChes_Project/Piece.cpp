@@ -56,3 +56,8 @@ void CPiece::GetPos(int* x, int* y)
 	*x = m_PosX;
 	*y = m_PosY;
 }
+
+int CPiece::GetMovement(int i)
+{
+	return Movement[i];
+}

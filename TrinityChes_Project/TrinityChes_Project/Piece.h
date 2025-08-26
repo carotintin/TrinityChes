@@ -18,6 +18,7 @@ public:
 	void Move(int, int);
 
 	void GetPos(int*, int*);
+	int GetMovement(int);
 
 protected:
 	PLAYER_ID m_ID;
@@ -25,6 +26,15 @@ protected:
 	float m_PosY;
 	int Movement[MAX_BOARD_SIZE];
 
+	typedef enum
+	{
+		KING,
+		ROOK,
+		BISHOP,
+	}PIECE_TYPE;
+
+
+	PIECE_TYPE m_Type;	//駒のタイプ
 	ID3D11Buffer* m_pVtx;	//頂点バッファ
 	ID3D11ShaderResourceView* m_TexPiece;	//テクスチャ
 

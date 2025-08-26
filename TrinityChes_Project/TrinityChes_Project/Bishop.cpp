@@ -3,6 +3,8 @@
 //コンストラクタ
 CBishop::CBishop(PLAYER_ID _ID)
 {
+	m_Type = BISHOP;
+	
 	//IDの初期化
 	m_ID = _ID;
 

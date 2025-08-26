@@ -3,6 +3,8 @@
 //コンストラクタ
 CRook::CRook(PLAYER_ID _ID)
 {
+	m_Type = ROOK;
+
 	//IDの初期化
 	m_ID = _ID;
 

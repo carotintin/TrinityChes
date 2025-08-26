@@ -21,7 +21,8 @@ CSquare::CSquare()
 	m_pVtx = CreateVertexBuffer(vtx, 4);
 
 	m_State = NOMAL;
-	m_Type = KING;
+	
+	m_pPiece = nullptr;
 
 	HRESULT hr2 = LoadTextureFromFile(GetDevice(), "Texture/MovableBlue.png", &m_TexMovable);
 	if (FAILED(hr2)) { MessageBox(NULL, "Board", "Errorrrrr", MB_OK); };
@@ -46,17 +47,47 @@ CSquare::~CSquare()
 //•`‰æˆ—
 void CSquare::Draw(int x, int y)
 {
-	SetSpritePos(-350.0f + x * 100.0f, -350.0f + y * 100.0f);
-	SetSpriteScale(1.0f, 1.0f);
-	SetSpriteColor(1.0f, 1.0f, 1.0f, 0.6f);
-	SetSpriteTexture(m_TexMovable);
-	DrawSprite(m_pVtx);
+
+
+	if (m_State == MOVABLE)
+	{
+		SetSpritePos(-350.0f + x * 100.0f, -350.0f + y * 100.0f);
+		SetSpriteScale(1.0f, 1.0f);
+		SetSpriteColor(1.0f, 1.0f, 1.0f, 0.6f);
+		SetSpriteTexture(m_TexMovable);
+		DrawSprite(m_pVtx);
+	}
+
+	
+
+
+	if (m_pPiece)
+	{
+		m_pPiece->Draw();
+	}
+
+
 }
 
 //•`‰æ‚Ìó‘Ô‚ğ•Ô‚·
 CSquare::SQUARE_STATE CSquare::GetState()
 {
 	return m_State;
+}
+
+void CSquare::SetState(SQUARE_STATE _state)
+{
+	m_State = _state;
+}
+
+void CSquare::SetPiece(CPiece* _pPiece)
+{
+	m_pPiece = _pPiece;
+}
+
+bool CSquare::ExistPiece()
+{
+	return m_pPiece;
 }
 
 

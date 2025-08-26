@@ -1,5 +1,6 @@
 #pragma once
 #include "SpriteDrawer.h"
+#include "Piece.h"
 
 class CSquare
 {
@@ -16,20 +17,18 @@ public:
 		MOVABLE,
 	}SQUARE_STATE;
 
-	typedef enum
-	{
-		KING,
-		ROOK,
-		BISHOP,
-	}PIECE_TYPE;
+	
 
 	SQUARE_STATE GetState();
-
+	void SetState(SQUARE_STATE);
+	void SetPiece(CPiece*);
+	bool ExistPiece();
 
 private:
 
 	SQUARE_STATE m_State;
-	PIECE_TYPE m_Type;
+	
+	CPiece* m_pPiece;
 
 	ID3D11Buffer* m_pVtx;	//頂点バッファ
 	ID3D11ShaderResourceView* m_TexMovable;	//テクスチャ

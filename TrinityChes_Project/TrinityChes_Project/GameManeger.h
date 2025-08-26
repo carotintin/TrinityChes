@@ -1,8 +1,17 @@
 #pragma once
-#include "Board.h"
 #include "Piece.h"
 #include "Define.h"
 #include "Player.h"
+#include <vector>
+
+
+typedef struct {
+	CPiece* piece;
+	int x;
+	int y;
+}MOVEMENT_CANDIDATE;
+
+class CBoard;
 
 class CGameManeger
 {
@@ -18,8 +27,11 @@ private:
 
 	CBoard*  m_Board;	
 
-	CPiece* m_Pieces[PIECE_NUM];	//‚U‘Ì•ª‚Ì‹î
+	
+	std::vector<MOVEMENT_CANDIDATE> m_vecCandidates;
 
 
 };
+
+
 

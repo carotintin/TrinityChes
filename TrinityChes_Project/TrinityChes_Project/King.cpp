@@ -3,6 +3,8 @@
 //コンストラクタ
 CKing::CKing(PLAYER_ID _ID)
 {
+	m_Type = KING;
+
 	//IDの初期化
 	m_ID = _ID;
 

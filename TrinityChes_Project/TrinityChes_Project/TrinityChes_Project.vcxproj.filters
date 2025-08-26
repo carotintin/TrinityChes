@@ -13,33 +13,30 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ソース ファイル\Base">
+      <UniqueIdentifier>{3826972a-34e0-4dda-87ee-6329d82282a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Scene">
+      <UniqueIdentifier>{5bcef398-9416-4dd7-80ba-93fb39a36bca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Piece">
+      <UniqueIdentifier>{e4eb1043-9164-4852-939e-940ca75410e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Base">
+      <UniqueIdentifier>{5b039789-0df1-4621-917b-b4ac82a03361}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Piece">
+      <UniqueIdentifier>{5546a5be-c9cc-4dc5-9c5f-f101a7fd878a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Player.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Rook.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteDrawer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Square.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="VertexBuffer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Bishop.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Board.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Define.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectX.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Game.h">
@@ -48,58 +45,76 @@
     <ClInclude Include="GameManeger.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="King.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Piece.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="DirectX.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
     </ClInclude>
     <ClInclude Include="KeyBoard.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteDrawer.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Bishop.h">
+      <Filter>ヘッダー ファイル\Piece</Filter>
+    </ClInclude>
+    <ClInclude Include="King.h">
+      <Filter>ヘッダー ファイル\Piece</Filter>
+    </ClInclude>
+    <ClInclude Include="Piece.h">
+      <Filter>ヘッダー ファイル\Piece</Filter>
+    </ClInclude>
+    <ClInclude Include="Rook.h">
+      <Filter>ヘッダー ファイル\Piece</Filter>
+    </ClInclude>
+    <ClInclude Include="Define.h">
+      <Filter>ヘッダー ファイル\Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Bishop.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Board.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectX.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Game.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="GameManeger.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="King.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Main.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Piece.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Player.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Rook.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="SpriteDrawer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Square.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="DirectX.cpp">
+      <Filter>ソース ファイル\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteDrawer.cpp">
+      <Filter>ソース ファイル\Base</Filter>
+    </ClCompile>
     <ClCompile Include="VertexBuffer.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>ソース ファイル\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Rook.cpp">
+      <Filter>ソース ファイル\Piece</Filter>
+    </ClCompile>
+    <ClCompile Include="King.cpp">
+      <Filter>ソース ファイル\Piece</Filter>
+    </ClCompile>
+    <ClCompile Include="Piece.cpp">
+      <Filter>ソース ファイル\Piece</Filter>
+    </ClCompile>
+    <ClCompile Include="Bishop.cpp">
+      <Filter>ソース ファイル\Piece</Filter>
     </ClCompile>
     <ClCompile Include="KeyBoard.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\Base</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
