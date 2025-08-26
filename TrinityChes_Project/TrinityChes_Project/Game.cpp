@@ -32,7 +32,7 @@ void UninitGame()
 //更新処理
 void UpdateGame()
 {
-	
+	g_pGameManeger->Update();
 }
 
 //描画処理

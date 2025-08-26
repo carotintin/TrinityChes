@@ -5,6 +5,7 @@
 #include "Piece.h"
 #include "GameManeger.h"
 #include <vector>
+#include "Cursor.h"
 
 
 class CBoard
@@ -26,6 +27,8 @@ private:
 	ID3D11ShaderResourceView* m_TexBoard;	//テクスチャ
 	
 	CPiece* m_pPieces[PIECE_NUM];	//６体分の駒
+
+	CCursor* m_Cursor;
 
 	std::vector<MOVEMENT_CANDIDATE>* m_pvecCandidates;
 

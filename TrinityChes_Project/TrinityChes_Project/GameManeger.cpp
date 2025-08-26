@@ -3,6 +3,7 @@
 #include "King.h"
 #include "Bishop.h"
 #include "Rook.h"
+#include "KeyBoard.h"
 
 //コンストラクタ
 CGameManeger::CGameManeger()
@@ -29,7 +30,8 @@ void CGameManeger::Draw()
 //更新処理
 void CGameManeger::Update()
 {
-
+	CKeyBoard::GetInstance().KeyboardUpdate();
+	m_Board->Update();
 }
 
 void CGameManeger::ExploleArea()

@@ -18,7 +18,7 @@ CBoard::CBoard(std::vector<MOVEMENT_CANDIDATE> *_pvecCandidates)
 	m_pPieces[4] = new CBishop(PLAYER2);
 	m_pPieces[5] = new CRook(PLAYER2);
 
-
+	m_Cursor = new CCursor();
 
 	m_pvecCandidates = _pvecCandidates;
 
@@ -32,9 +32,6 @@ CBoard::CBoard(std::vector<MOVEMENT_CANDIDATE> *_pvecCandidates)
 		aSquare[y][x].SetPiece(m_pPieces[i]);	//マスに駒の情報を入れる
 
 	}
-
-	
-
 
 
 	//頂点情報の定義
@@ -61,6 +58,12 @@ CBoard::CBoard(std::vector<MOVEMENT_CANDIDATE> *_pvecCandidates)
 //デストラクタ
 CBoard::~CBoard()
 {
+	if (m_Cursor)
+	{
+		delete m_Cursor;
+		m_Cursor = nullptr;
+	}
+
 	if (m_TexBoard)
 	{
 		m_TexBoard->Release();
@@ -93,12 +96,14 @@ void CBoard::Draw()
 		}
 	}
 
+	m_Cursor->Draw();
+
 }
 
 //盤面の更新処理
 void CBoard::Update()
 {
-
+	m_Cursor->Update();
 }
 
 //移動可能範囲を求める

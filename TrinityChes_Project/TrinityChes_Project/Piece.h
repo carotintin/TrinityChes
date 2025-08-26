@@ -25,6 +25,7 @@ protected:
 	float m_PosX;
 	float m_PosY;
 	int Movement[MAX_BOARD_SIZE];
+	bool m_bUsable;
 
 	typedef enum
 	{

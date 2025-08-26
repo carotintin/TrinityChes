@@ -22,7 +22,7 @@ CPiece::CPiece()
 	 m_PosX = -1;
 	 m_PosY = -1;
 	 
-	
+	 m_bUsable = true;
 	 
 }
 
@@ -55,6 +55,8 @@ void CPiece::GetPos(int* x, int* y)
 {
 	*x = m_PosX;
 	*y = m_PosY;
+
+	m_bUsable = false;
 }
 
 int CPiece::GetMovement(int i)
