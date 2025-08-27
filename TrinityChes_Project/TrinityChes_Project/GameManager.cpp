@@ -76,6 +76,7 @@ void CGameManager::Update()
 	CKeyBoard::GetInstance().KeyboardUpdate();
 	m_Board->Update();
 	
+	//ƒ^[ƒ“‚ªI‚í‚Á‚½‚ç
 	if (m_Board->TurnEnd())
 	{
 		if (m_Turn == PLAYER1)m_Turn = PLAYER2;

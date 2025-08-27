@@ -213,6 +213,9 @@ void CBoard::FindMovableArea()
 	//ˆÚ“®Œó•â‚ğ‹‚ß‚é
 	for (int i = 0; i < PIECE_NUM; ++i)	//‹î‚ğˆêŒÂˆêŒÂŒ©‚é
 	{
+		if(m_pPieces[i]->GetUsed() == true) break;
+
+
 		m_pPieces[i]->GetPos(&CurrentX, &CurrentY);		//¡Œ©‚Ä‚é‹î‚ÌÀ•W‚Ìæ“¾
 
 		//ˆÚ“®—Ê‚Ì•ûŒü‚²‚Æ’Tõ

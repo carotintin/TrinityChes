@@ -49,6 +49,8 @@ void CPiece::Move(int x, int y)
 {
 	m_PosX = x;
 	m_PosY = y;
+
+	m_bUsable = false;
 }
 
 void CPiece::GetPos(int* x, int* y)
@@ -56,12 +58,17 @@ void CPiece::GetPos(int* x, int* y)
 	*x = m_PosX;
 	*y = m_PosY;
 
-	m_bUsable = false;
+	
 }
 
 int CPiece::GetMovement(int i)
 {
 	return Movement[i];
+}
+
+bool CPiece::GetUsed()
+{
+	return m_bUsable;
 }
 
 PLAYER_ID CPiece::GetID()
