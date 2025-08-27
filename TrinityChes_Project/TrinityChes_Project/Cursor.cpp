@@ -29,7 +29,7 @@ CCursor::CCursor()
 	m_pVtx = CreateVertexBuffer(vtx, 4);
 
 
-	HRESULT hr2 = LoadTextureFromFile(GetDevice(), "texture/CursorRed.png", &m_TexCursor);
+	HRESULT hr2 = LoadTextureFromFile(GetDevice(), "texture/ChesFrame.png", &m_TexCursor);
 	if (FAILED(hr2)) { MessageBox(NULL, "Cursor", "Errorrrrr", MB_OK); };
 }
 
@@ -83,8 +83,8 @@ void CCursor::Update()
 
 void CCursor::GetPos(int* x, int* y)
 {
-	x = &m_PosX;
-	y = &m_PosY;
+	*x = m_PosX;
+	*y = m_PosY;
 }
 
 bool CCursor::GetbPress()

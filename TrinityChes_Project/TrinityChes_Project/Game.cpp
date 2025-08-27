@@ -4,41 +4,37 @@
 #include "DirectX.h"
 #include "Game.h"
 #include "Board.h"
-#include "GameManeger.h"
+#include "GameManager.h"
 
 
-CGameManeger* g_pGameManeger;
+CGameManager* g_pGameManeger;
 
 
 //初期化処理
 bool InitGame()
 {
-	g_pGameManeger = new CGameManeger();
-
+	
+	CGameManager::GetInstance().Init();
 	return true;
 }
 
 //終了処理
 void UninitGame()
 {
-	if (g_pGameManeger)
-	{
-		delete g_pGameManeger;
-		g_pGameManeger = nullptr;
-	}
+	CGameManager::GetInstance().Uninit();
 
 }
 
 //更新処理
 void UpdateGame()
 {
-	g_pGameManeger->Update();
+	CGameManager::GetInstance().Update();
 }
 
 //描画処理
 void DrawGame()
 {
-	g_pGameManeger->Draw();
+	CGameManager::GetInstance().Draw();
 
 }
 

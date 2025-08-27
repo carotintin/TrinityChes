@@ -20,7 +20,7 @@ CSquare::CSquare()
 	//頂点バッファの定義
 	m_pVtx = CreateVertexBuffer(vtx, 4);
 
-	m_State = NOMAL;
+	m_State = NORMAL;
 	
 	m_pPiece = nullptr;
 
@@ -73,6 +73,11 @@ void CSquare::Draw(int x, int y)
 CSquare::SQUARE_STATE CSquare::GetState()
 {
 	return m_State;
+}
+
+CPiece* CSquare::GetPiece()
+{
+	return m_pPiece;
 }
 
 void CSquare::SetState(SQUARE_STATE _state)

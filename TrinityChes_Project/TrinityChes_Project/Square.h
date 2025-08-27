@@ -13,13 +13,14 @@ public:
 	
 	typedef enum
 	{
-		NOMAL,
+		NORMAL,
 		MOVABLE,
 	}SQUARE_STATE;
 
 	
 
 	SQUARE_STATE GetState();
+	CPiece* GetPiece();
 	void SetState(SQUARE_STATE);
 	void SetPiece(CPiece*);
 	bool ExistPiece();

@@ -47,8 +47,8 @@ void CPiece::Update()
 //ˆÚ“®ˆ—
 void CPiece::Move(int x, int y)
 {
-	m_PosX += x;
-	m_PosY += y;
+	m_PosX = x;
+	m_PosY = y;
 }
 
 void CPiece::GetPos(int* x, int* y)
@@ -62,4 +62,9 @@ void CPiece::GetPos(int* x, int* y)
 int CPiece::GetMovement(int i)
 {
 	return Movement[i];
+}
+
+PLAYER_ID CPiece::GetID()
+{
+	return m_ID;
 }
