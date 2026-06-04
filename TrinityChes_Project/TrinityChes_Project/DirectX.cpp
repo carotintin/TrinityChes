@@ -9,9 +9,9 @@ IDXGISwapChain* g_pSwapChain;		//フレームバッファとディスプレイの橋渡し
 ID3D11RenderTargetView* g_pRTV;		//フレームバッファそのもの
 ID3D11BlendState* g_pBlendState;
 
-float R = 201.0f / 255.0f;
-float G = 218.0f / 255.0f;
-float B = 244.0f / 255.0f;
+float R = 0.0f;
+float G = 0.0f;
+float B = 0.0f;
 
 ID3D11SamplerState* g_pSamplerState;
 

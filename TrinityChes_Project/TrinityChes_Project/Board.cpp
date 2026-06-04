@@ -60,7 +60,7 @@ CBoard::CBoard(std::vector<MOVEMENT_CANDIDATE> *_pvecCandidates)
 	m_pVtx = CreateVertexBuffer(vtx, 4);
 
 	//テクスチャの読み込み
-	HRESULT hr = LoadTextureFromFile(GetDevice(), "Texture/TrinityChesBoard.png", &m_TexBoard);
+	HRESULT hr = LoadTextureFromFile(GetDevice(), "Texture/TrinityChesBoard_NEO.png", &m_TexBoard);
 	if (FAILED(hr)) { MessageBox(NULL, "Board", "Errorrrrr", MB_OK); };
 
 	FindMovableArea();

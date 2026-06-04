@@ -90,7 +90,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// ウィンドウの作成
 	HWND hWnd = CreateWindowEx(
 		WS_EX_OVERLAPPEDWINDOW, // ウィンドウの見た目①
-		wcex.lpszClassName, "ぷよぷよ", // タイトルバーに表示する文字
+		wcex.lpszClassName, "トリニティチェス", // タイトルバーに表示する文字
 		WS_CAPTION | WS_SYSMENU, // ウィンドウの見た目②
 		CW_USEDEFAULT, 
 		CW_USEDEFAULT, // ウィンドウの表示位置
@@ -200,7 +200,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		//罰ボタンを押したときの処理
 	case WM_CLOSE:
-		if (IDNO == MessageBox(hWnd, "やめる？", "やめるは", MB_YESNO | MB_ICONWARNING ))
+		if (IDNO == MessageBox(hWnd, "やめる？", "ゲーム終了", MB_YESNO | MB_ICONWARNING ))
 		{
 			return 0;
 			//DefWindowProcが処理されなくなる
