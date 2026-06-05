@@ -52,8 +52,27 @@
 //		・自分の動かした駒が相手の移動範囲に入っている場合
 //
 //（どれか１つ取られたら負けなので相手の駒を獲る処理は必要ない）
-
-
+//
+//
+//
+//●残りタスク
+// 
+//		・同じ駒が連続で動かせてるのを直す
+//		・動かせない駒の移動範囲でチェックメイト判定をさせないようにする
+//		・チェックメイト判定のバグ直し
+//		・駒の配置フェーズを作る
+//		・リスタート＆ゲーム終了表示
+//		・プレイヤーターンの文字アニメーション
+//		・制作者ロゴ→タイトル画面
+// 
+//
+//
+//
+//
+//
+//
+//
+//
 
 //mm マルチメディア
 //lib cppを一つのファイルにまとめたようなもの
@@ -172,9 +191,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			if (nowTime - fpsOldTime >= 1000)
 			{
 				#ifdef _DEBUG
-				std::string txtFps = std::to_string(fpsCount);
-				txtFps = "FPS:" + txtFps;
-				SetWindowText(hWnd, txtFps.c_str());
+				//std::string txtFps = std::to_string(fpsCount);
+				//txtFps = "FPS:" + txtFps;
+				//SetWindowText(hWnd, txtFps.c_str());
 				#endif
 
 				fpsCount = 0;

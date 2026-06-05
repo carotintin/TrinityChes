@@ -158,6 +158,7 @@ void CBoard::Update()
 				aSquare[prevY][prevX].SetPiece(nullptr);
 
 				m_pSelectedPiece->Move(x,y);
+				
 
 				aSquare[y][x].SetPiece(m_pSelectedPiece);
 				ResetState(m_pSelectedPiece);
