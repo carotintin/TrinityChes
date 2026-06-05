@@ -66,9 +66,14 @@ int CPiece::GetMovement(int i)
 	return Movement[i];
 }
 
-bool CPiece::GetUsed()
+bool CPiece::GetUsable()
 {
 	return m_bUsable;
+}
+
+void CPiece::SetUsable(bool _usable)
+{
+	m_bUsable = _usable;
 }
 
 PLAYER_ID CPiece::GetID()

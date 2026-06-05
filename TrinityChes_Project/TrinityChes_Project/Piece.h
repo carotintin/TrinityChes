@@ -19,7 +19,8 @@ public:
 
 	void GetPos(int*, int*);
 	int GetMovement(int);
-	bool GetUsed();
+	bool GetUsable();
+	void SetUsable(bool);
 	PLAYER_ID GetID();
 
 protected:

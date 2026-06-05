@@ -42,7 +42,7 @@ CBoard::CBoard(std::vector<MOVEMENT_CANDIDATE> *_pvecCandidates)
 		int y;
 		m_pPieces[i]->GetPos(&x,&y);	//駒の座標を取得
 		aSquare[y][x].SetPiece(m_pPieces[i]);	//マスに駒の情報を入れる
-
+		m_pPieces[i]->SetUsable(true);
 	}
 
 
@@ -119,21 +119,24 @@ void CBoard::Update()
 
 	switch (m_SelectPhase)
 	{
-	case SELECT_PIECE:
-		if (m_Cursor->GetbPress())
+	case SELECT_PIECE:	//動かす駒を選んでる時
+		if (m_Cursor->GetbPress()) //決定キーが押されたら
 		{
 
-
+			//カーソルの位置を持ってくる
 			int x;
 			int y;
 			m_Cursor->GetPos(&x, &y);
 
-			
+			//カーソルの位置に駒があるか見る
 			m_pSelectedPiece = (aSquare[y][x].GetPiece());
-			if (m_pSelectedPiece != nullptr)
+			if (m_pSelectedPiece != nullptr)	//あったら
 			{
-				if (m_pSelectedPiece->GetID() == CGameManager::GetInstance().GetTurn())
+				// プレイヤーターンと駒の持ち主が同じか見る＆前ターンに使ってないか見る
+				if (m_pSelectedPiece->GetID() == CGameManager::GetInstance().GetTurn()
+						&& m_pSelectedPiece->GetUsable())
 				{
+					//その駒の移動可能範囲を出す
 					MakeMovable(aSquare[y][x].GetPiece());
 					m_SelectPhase = SELECT_DESTINATION;
 				}
@@ -142,34 +145,61 @@ void CBoard::Update()
 		}
 		break;
 
-	case SELECT_DESTINATION:
-		if (m_Cursor->GetbPress())
+	case SELECT_DESTINATION:	// 駒の移動可能範囲を表示してる時
+		if (m_Cursor->GetbPress())	// 決定キーが押されたら
 		{
+			// カーソルの位置を持ってくる
 			int x;
 			int y;
 			m_Cursor->GetPos(&x, &y);
 
-
+			// カーソルの位置が駒の移動可能範囲だったら
 			if (aSquare[y][x].GetState() == CSquare::MOVABLE)
 			{
+				// 駒が元居た位置を空にする
 				int prevX;
 				int prevY;
 				m_pSelectedPiece->GetPos(&prevX, &prevY);
 				aSquare[prevY][prevX].SetPiece(nullptr);
 
+				// 駒を移動させる
 				m_pSelectedPiece->Move(x,y);
-				
-
+				// 盤面にも登録
 				aSquare[y][x].SetPiece(m_pSelectedPiece);
+
+				// 駒で塗った移動可能範囲を戻す
 				ResetState(m_pSelectedPiece);
+
+				// 駒を選ぶフェイズに戻る
 				m_SelectPhase = SELECT_PIECE;
+
+				// 全駒の移動可能範囲を計算しなおす＆チェックメイト判定
 				FindMovableArea();
 
+				// 移動させた駒を使用不可＆使用不可だった自分の駒を使用可能に
+				for (int i = 0; i < PIECE_NUM; ++i)
+				{
+					// 自分の駒かどうかチェック
+					if (m_pPieces[i]->GetID() == m_pSelectedPiece->GetID())
+					{
+						if (m_pPieces[i] == m_pSelectedPiece)
+						{
+							m_pPieces[i]->SetUsable(false); // 動かした駒
+						}
+						else
+						{
+							m_pPieces[i]->SetUsable(true);  // それ以外の自分の駒
+						}
+					}
+				}
+
+				// ターン終了
 				m_bTurnEnd = true;
 
 			}
 			else if (aSquare[y][x].GetState() == CSquare::NORMAL)
 			{
+				// 移動可能範囲じゃないとこを選択したら駒選択に戻る
 				ResetState(m_pSelectedPiece);
 				m_SelectPhase = SELECT_PIECE;
 			}
@@ -184,12 +214,9 @@ void CBoard::Update()
 	}
 
 	
-	
-
-
 }
 
-//移動可能範囲を求める
+// 全駒の移動可能範囲を計算しなおす＆チェックメイト判定
 void CBoard::FindMovableArea()
 {
 	int Movement;
@@ -197,7 +224,9 @@ void CBoard::FindMovableArea()
 	int CurrentY;
 	int NewX;
 	int NewY;
-	int EnemyCount = 0;	//自分の駒の移動範囲に入っている敵の駒の数
+
+	std::vector<CPiece*> targetedEnemies;	//自分の駒の移動範囲に入っている敵の駒の数
+
 	PLAYER_ID ID;
 
 	//ベクターをリセットする
@@ -211,10 +240,11 @@ void CBoard::FindMovableArea()
 	ID = CGameManager::GetInstance().GetTurn();
 
 	
-	//移動候補を求める
+	// 移動候補を求める
 	for (int i = 0; i < PIECE_NUM; ++i)	//駒を一個一個見る
 	{
-		if(m_pPieces[i]->GetUsed() == true) break;
+		// 動かせない駒は計算しない
+		if(m_pPieces[i]->GetUsable() == false) continue;
 
 
 		m_pPieces[i]->GetPos(&CurrentX, &CurrentY);		//今見てる駒の座標の取得
@@ -235,20 +265,39 @@ void CBoard::FindMovableArea()
 				//探索している場所に駒があったら
 				if (aSquare[NewY][NewX].ExistPiece())
 				{
+					CPiece* pEncounteredPiece = aSquare[NewY][NewX].GetPiece();
+
 					//探索元の駒が自分の駒だったら
 					if (m_pPieces[i]->GetID() == ID)
 					{
 						//探索している場所の駒が敵の駒だったら
 						if (aSquare[NewY][NewX].GetPiece()->GetID() != ID)
 						{
-							EnemyCount++;
-							if (EnemyCount >= 2)
+							// すでにリストに入っている敵駒かチェックする
+							bool bAlreadyTargeted = false;
+							for (int t = 0; t < targetedEnemies.size(); ++t)
 							{
-								//ここにチェックメイトのフラグを立てる
-								m_bTrinityCheckMate = true;
-								return;
+								if (targetedEnemies[t] == pEncounteredPiece)
+								{
+									bAlreadyTargeted = true;
+									break;
+								}
+							}
+
+							// まだリストに入っていない新しい敵駒なら追加
+							if (!bAlreadyTargeted)
+							{
+								targetedEnemies.push_back(pEncounteredPiece);
+
+								// 移動可能範囲にいる敵が2つ以上になったらチェックメイト
+								if (targetedEnemies.size() >= 2)
+								{
+									m_bTrinityCheckMate = true;
+									return;
+								}
 							}
 							
+							break;	//チェスって相手の駒飛び越えられないらしい
 						}
 
 						//探索している場所の駒が自分の駒だったら探索終了
@@ -269,6 +318,8 @@ void CBoard::FindMovableArea()
 							return;
 						}
 					}
+
+					break;	//チェスって相手の駒飛び越えられないらしい
 
 				}
 				
@@ -318,6 +369,7 @@ void CBoard::MakeMovable(CPiece* _pPiece)
 	}
 }
 
+// 駒で塗った移動可能範囲を戻す
 void CBoard::ResetState(CPiece* _pPiece)
 {
 	int size = m_pvecCandidates->size();
