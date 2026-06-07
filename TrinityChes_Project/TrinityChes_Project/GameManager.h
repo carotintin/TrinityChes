@@ -31,6 +31,7 @@ public:
 	void Draw();
 	void Update();
 	PLAYER_ID GetTurn();
+	void SetTurn(PLAYER_ID);
 
 private:
 	CGameManager();
@@ -46,6 +47,12 @@ private:
 	ID3D11Buffer* m_pVtx;	//頂点バッファ
 	ID3D11ShaderResourceView* m_TexCheckMate;	//テクスチャ
 	ID3D11ShaderResourceView* m_TexJibakuMate;	//テクスチャ
+
+	// アニメーションターンロゴ
+	ID3D11ShaderResourceView* m_TexPlayer1Turn = nullptr; // P1用テクスチャ
+	ID3D11ShaderResourceView* m_TexPlayer2Turn = nullptr; // P2用テクスチャ
+	ID3D11Buffer* m_pVtxLogo = nullptr; // ロゴ描画用の頂点バッファ
+	float m_LogoUvOffset = 0.0f; // UVスクロール用の変数
 	
 	std::vector<MOVEMENT_CANDIDATE> m_vecCandidates;
 

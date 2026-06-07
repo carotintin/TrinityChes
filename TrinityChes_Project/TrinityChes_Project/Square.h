@@ -15,6 +15,7 @@ public:
 	{
 		NORMAL,
 		MOVABLE,
+		NOSET,
 	}SQUARE_STATE;
 
 	
@@ -33,5 +34,6 @@ private:
 
 	ID3D11Buffer* m_pVtx;	//頂点バッファ
 	ID3D11ShaderResourceView* m_TexMovable;	//テクスチャ
+	ID3D11ShaderResourceView* m_TexNoRed;
 };
 

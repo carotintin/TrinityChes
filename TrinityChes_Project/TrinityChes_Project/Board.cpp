@@ -22,27 +22,40 @@ CBoard::CBoard(std::vector<MOVEMENT_CANDIDATE> *_pvecCandidates)
 
 	m_Cursor = new CCursor();
 
-	m_pSelectedPiece = nullptr;
-
-	m_SelectPhase = SELECT_PIECE;
-
+	// 初期フェーズを SETUP_PHASE に変更
+	m_SelectPhase = SETUP_PHASE;
 	m_pvecCandidates = _pvecCandidates;
 
-	m_pPieces[0]->Move(3, 1);	//駒の初期位置（おためし）
-	m_pPieces[1]->Move(5, 1);	//駒の初期位置（おためし）
-	m_pPieces[2]->Move(1, 1);	//駒の初期位置（おためし）
-	m_pPieces[3]->Move(4, 6);	//駒の初期位置（おためし）
-	m_pPieces[4]->Move(2, 6);	//駒の初期位置（おためし）
-	m_pPieces[5]->Move(6, 6);	//駒の初期位置（おためし）
 
-	for (int i = 0; i < PIECE_NUM; ++i)
-	{
-		
-		int x;
-		int y;
-		m_pPieces[i]->GetPos(&x,&y);	//駒の座標を取得
-		aSquare[y][x].SetPiece(m_pPieces[i]);	//マスに駒の情報を入れる
-		m_pPieces[i]->SetUsable(true);
+	// === ここから：先攻後攻の決定と配置順の作成 ===
+	srand((unsigned int)time(NULL));
+	PLAYER_ID firstPlayer = (rand() % 2 == 0) ? PLAYER1 : PLAYER2;
+	PLAYER_ID secondPlayer = (firstPlayer == PLAYER1) ? PLAYER2 : PLAYER1;
+
+	// インデックス対応表: P1=King(0),Bishop(1),Rook(2) / P2=King(3),Bishop(4),Rook(5)
+	int f_B = (firstPlayer == PLAYER1) ? 1 : 4; // 先攻のビショップ
+	int s_B = (secondPlayer == PLAYER1) ? 1 : 4; // 後攻のビショップ
+	int f_R = (firstPlayer == PLAYER1) ? 2 : 5; // 先攻のルーク
+	int s_R = (secondPlayer == PLAYER1) ? 2 : 5; // 後攻のルーク
+	int f_K = (firstPlayer == PLAYER1) ? 0 : 3; // 先攻のキング
+	int s_K = (secondPlayer == PLAYER1) ? 0 : 3; // 後攻のキング
+
+	// 配置順リストに登録 (1:ビショップ, 2:ルーク, 3:キングの交互)
+	m_SetupOrder.push_back({ f_B, firstPlayer });
+	m_SetupOrder.push_back({ s_B, secondPlayer });
+	m_SetupOrder.push_back({ f_R, firstPlayer });
+	m_SetupOrder.push_back({ s_R, secondPlayer });
+	m_SetupOrder.push_back({ f_K, firstPlayer });
+	m_SetupOrder.push_back({ s_K, secondPlayer });
+
+	m_SetupIndex = 0;
+
+	// GameManagerに最初のプレイヤーのターンをセット（ロゴ表示用）
+	CGameManager::GetInstance().SetTurn(firstPlayer);
+
+	// 全駒を使用可能状態にしておく
+	for (int i = 0; i < PIECE_NUM; ++i) {
+		m_pPieces[i]->SetUsable(false);
 	}
 
 
@@ -64,7 +77,7 @@ CBoard::CBoard(std::vector<MOVEMENT_CANDIDATE> *_pvecCandidates)
 	if (FAILED(hr)) { MessageBox(NULL, "Board", "Errorrrrr", MB_OK); };
 
 	FindMovableArea();
-	//MakeMovable(m_pPieces[4]);
+	UpdateSetupAreas();
 }
 
 //デストラクタ
@@ -108,6 +121,11 @@ void CBoard::Draw()
 		}
 	}
 
+	if (m_SelectPhase == SETUP_PHASE && m_SetupIndex < m_SetupOrder.size())
+	{
+		m_pPieces[m_SetupOrder[m_SetupIndex].pieceIndex]->Draw();
+	}
+
 	m_Cursor->Draw();
 
 }
@@ -119,10 +137,62 @@ void CBoard::Update()
 
 	switch (m_SelectPhase)
 	{
+	case SETUP_PHASE:
+		// 毎フレーム、カーソル位置に基づくプレビューと判定を更新する
+		UpdateSetupPreview();
+
+		if (m_Cursor->GetbPress()) // 決定キーが押されたら
+		{
+			// m_bCanSet が true の時だけ配置処理を行う
+			if (m_bCanSet)
+			{
+				int x, y;
+				m_Cursor->GetPos(&x, &y);
+				int pIdx = m_SetupOrder[m_SetupIndex].pieceIndex;
+
+				// 駒の座標を更新し、マスにセットする
+				aSquare[y][x].SetPiece(m_pPieces[pIdx]);
+
+				// 配置されたので、これ以降「行動範囲計算」の対象にする
+				m_pPieces[pIdx]->SetUsable(true);
+
+				// 次の配置へ
+				m_SetupIndex++;
+
+				// 全ての配置が終わったかチェック
+				if (m_SetupIndex >= m_SetupOrder.size())
+				{
+					// 配置フェーズのハイライトをすべて通常状態に戻す
+					for (int sy = 0; sy < MAX_BOARD_SIZE; ++sy) {
+						for (int sx = 0; sx < MAX_BOARD_SIZE; ++sx) {
+							aSquare[sy][sx].SetState(CSquare::SQUARE_STATE::NORMAL);
+						}
+					}
+					// 全駒を使用可能にする
+					for (int i = 0; i < PIECE_NUM; ++i) {
+						m_pPieces[i]->SetUsable(true);
+					}
+					// ゲーム開始準備
+					m_SelectPhase = SELECT_PIECE;
+					FindMovableArea();
+				}
+				else
+				{
+					// 次の駒を配置するプレイヤーのターンに切り替える
+					CGameManager::GetInstance().SetTurn(m_SetupOrder[m_SetupIndex].player);
+
+					// 新しい駒が置かれたので行動範囲を再計算
+					FindMovableArea(false);
+					UpdateSetupAreas();
+				}
+			}
+		}
+		break;
+
+
 	case SELECT_PIECE:	//動かす駒を選んでる時
 		if (m_Cursor->GetbPress()) //決定キーが押されたら
 		{
-
 			//カーソルの位置を持ってくる
 			int x;
 			int y;
@@ -134,13 +204,15 @@ void CBoard::Update()
 			{
 				// プレイヤーターンと駒の持ち主が同じか見る＆前ターンに使ってないか見る
 				if (m_pSelectedPiece->GetID() == CGameManager::GetInstance().GetTurn()
-						&& m_pSelectedPiece->GetUsable())
+					&& m_pSelectedPiece->GetUsable())
 				{
+					FindMovableArea(false);
+					
 					//その駒の移動可能範囲を出す
 					MakeMovable(aSquare[y][x].GetPiece());
 					m_SelectPhase = SELECT_DESTINATION;
 				}
-				
+
 			}
 		}
 		break;
@@ -170,9 +242,6 @@ void CBoard::Update()
 				// 駒で塗った移動可能範囲を戻す
 				ResetState(m_pSelectedPiece);
 
-				// 駒を選ぶフェイズに戻る
-				m_SelectPhase = SELECT_PIECE;
-
 				// 全駒の移動可能範囲を計算しなおす＆チェックメイト判定
 				FindMovableArea();
 
@@ -188,13 +257,16 @@ void CBoard::Update()
 						}
 						else
 						{
-							m_pPieces[i]->SetUsable(true);  // それ以外の自分の駒
+							m_pPieces[i]->SetUsable(true);  //それ以外の自分の駒
 						}
 					}
 				}
 
 				// ターン終了
 				m_bTurnEnd = true;
+
+				// 駒を選ぶフェイズに戻る
+				m_SelectPhase = SELECT_PIECE;
 
 			}
 			else if (aSquare[y][x].GetState() == CSquare::NORMAL)
@@ -205,7 +277,6 @@ void CBoard::Update()
 			}
 			
 		}
-
 		break;
 
 
@@ -216,124 +287,154 @@ void CBoard::Update()
 	
 }
 
-// 全駒の移動可能範囲を計算しなおす＆チェックメイト判定
-void CBoard::FindMovableArea()
+#include <utility>
+#include <set>
+
+
+void CBoard::FindMovableArea(bool bCheckMate)
 {
-	int Movement;
-	int CurrentX;
-	int CurrentY;
-	int NewX;
-	int NewY;
-
-	std::vector<CPiece*> targetedEnemies;	//自分の駒の移動範囲に入っている敵の駒の数
-
-	PLAYER_ID ID;
-
-	//ベクターをリセットする
-	int size;
-	size = m_pvecCandidates->size();
-	for (int i = 0; i < size; ++i)
+	// 判定を行う場合のみフラグを初期化
+	if (bCheckMate)
 	{
-		m_pvecCandidates->pop_back();
+		m_bTrinityCheckMate = false;
+		m_bJibakuMate = false;
 	}
 
-	ID = CGameManager::GetInstance().GetTurn();
+	m_pvecCandidates->clear();
+	PLAYER_ID myID = CGameManager::GetInstance().GetTurn();
 
-	
-	// 移動候補を求める
-	for (int i = 0; i < PIECE_NUM; ++i)	//駒を一個一個見る
+	// 判定用データ保持
+	std::set<CPiece*> targetedEnemies; // 射程に入れた敵駒のユニークリスト
+	struct EnemyRangeData {
+		CPiece* pPiece;
+		std::vector<std::pair<int, int>> range;
+	};
+	std::vector<EnemyRangeData> enemyRangeList;
+
+	// Usable（動ける）な敵による自爆かどうかを判定するローカルフラグ
+	bool bFatalJibaku = false;
+
+	// ========================================================
+	// 1. 全駒の走査と移動可能範囲の計算
+	// ========================================================
+	for (int i = 0; i < PIECE_NUM; ++i)
 	{
-		// 動かせない駒は計算しない
-		if(m_pPieces[i]->GetUsable() == false) continue;
+		CPiece* pPiece = m_pPieces[i];
+		bool isMyPiece = (pPiece->GetID() == myID);
 
+		// 自分の駒でusableがfalseなら計算スキップ（ただし敵はusableに関わらず射線を計算）
+		if (isMyPiece && !pPiece->GetUsable()) continue;
 
-		m_pPieces[i]->GetPos(&CurrentX, &CurrentY);		//今見てる駒の座標の取得
+		int curX, curY;
+		pPiece->GetPos(&curX, &curY);
+		std::vector<std::pair<int, int>> currentRange;
 
-		//移動量の方向ごと探索
 		for (int j = 0; j < 8; ++j)
 		{
-			Movement = m_pPieces[i]->GetMovement(j);	//今見てる移動量の取得
-			//移動量の数だけ一マスずつ探索
-			for (int k = 0; k < Movement; ++k)
+			int movement = pPiece->GetMovement(j);
+			for (int k = 0; k < movement; ++k)
 			{
-				//移動先のマスの計算
-				NewX = CurrentX + aDirection[j][0] * (k + 1);	
-				if (NewX < 0 || NewX >= MAX_BOARD_SIZE) break;	//盤面をはみ出たら終了
-				NewY = CurrentY + aDirection[j][1] * (k + 1);
-				if (NewY < 0 || NewY >= MAX_BOARD_SIZE) break;	//盤面をはみ出たら終了
+				int nX = curX + aDirection[j][0] * (k + 1);
+				int nY = curY + aDirection[j][1] * (k + 1);
 
-				//探索している場所に駒があったら
-				if (aSquare[NewY][NewX].ExistPiece())
-				{
-					CPiece* pEncounteredPiece = aSquare[NewY][NewX].GetPiece();
+				if (nX < 0 || nX >= MAX_BOARD_SIZE || nY < 0 || nY >= MAX_BOARD_SIZE) break;
 
-					//探索元の駒が自分の駒だったら
-					if (m_pPieces[i]->GetID() == ID)
-					{
-						//探索している場所の駒が敵の駒だったら
-						if (aSquare[NewY][NewX].GetPiece()->GetID() != ID)
-						{
-							// すでにリストに入っている敵駒かチェックする
-							bool bAlreadyTargeted = false;
-							for (int t = 0; t < targetedEnemies.size(); ++t)
-							{
-								if (targetedEnemies[t] == pEncounteredPiece)
-								{
-									bAlreadyTargeted = true;
-									break;
-								}
-							}
+				CPiece* pTarget = aSquare[nY][nX].GetPiece();
 
-							// まだリストに入っていない新しい敵駒なら追加
-							if (!bAlreadyTargeted)
-							{
-								targetedEnemies.push_back(pEncounteredPiece);
+				if (isMyPiece) {
+					// --- 自分の駒の処理 ---
+					if (pTarget != nullptr) {
+						if (pTarget->GetID() != myID) {
+							// 敵を射程に捉えた（既存ルール：3駒判定用）
+							targetedEnemies.insert(pTarget);
 
-								// 移動可能範囲にいる敵が2つ以上になったらチェックメイト
-								if (targetedEnemies.size() >= 2)
-								{
-									m_bTrinityCheckMate = true;
-									return;
-								}
-							}
-							
-							break;	//チェスって相手の駒飛び越えられないらしい
+							// 敵のいるマスまで移動候補に追加
+							m_TmpCandidate.piece = pPiece; m_TmpCandidate.x = nX; m_TmpCandidate.y = nY;
+							m_pvecCandidates->push_back(m_TmpCandidate);
 						}
-
-						//探索している場所の駒が自分の駒だったら探索終了
-						if (aSquare[NewY][NewX].GetPiece()->GetID() != ID)
-						{
-							break;
-						}
-								
+						break; // 敵味方問わず駒があれば奥へは行けない
 					}
-					//探索元の駒が敵の駒だったら
-					else if (m_pPieces[i]->GetID() != ID)
-					{
-						//探索している場所の駒が自分の駒だったら探索終了
-						if (aSquare[NewY][NewX].GetPiece()->GetID() == ID)
-						{
-							//ここに自爆メイトのフラグを立てる
-							m_bJibakuMate = true;
-							return;
-						}
-					}
-
-					break;	//チェスって相手の駒飛び越えられないらしい
-
+					m_TmpCandidate.piece = pPiece; m_TmpCandidate.x = nX; m_TmpCandidate.y = nY;
+					m_pvecCandidates->push_back(m_TmpCandidate);
 				}
-				
-
-				//ベクターに情報を入れる処理
-				m_TmpCandidate.piece = m_pPieces[i];
-				m_TmpCandidate.x = NewX;
-				m_TmpCandidate.y = NewY;
-				m_pvecCandidates->push_back(m_TmpCandidate);
+				else {
+					// --- 相手の駒の処理（自爆・新トリニティ判定用） ---
+					if (pTarget != nullptr) {
+						// 判定を行う時のみ自爆フラグを立てる
+						if (bCheckMate && pTarget->GetID() == myID)
+						{
+							m_bJibakuMate = true;
+							// その敵駒が「Usable（次に動ける状態）」なら致命的な自爆とする
+							if (pPiece->GetUsable())
+							{
+								bFatalJibaku = true;
+							}
+						}
+						break;
+					}
+					currentRange.push_back({ nX, nY });
+				}
 			}
 		}
-
+		if (!isMyPiece) enemyRangeList.push_back({ pPiece, currentRange });
 	}
 
+	// ========================================================
+	// 2. 勝利条件（トリニティ）の最終判定
+	// ========================================================
+
+	// 勝敗判定を要求された時のみ判定を行う
+	if (bCheckMate)
+	{
+		// Usableな敵の射程に入った（致命的な自爆）場合のみ最優先で処理を終え、敗北とする
+		if (bFatalJibaku)
+		{
+			return;
+		}
+
+		// 条件A: 既存ルール（敵を3駒以上射程に入れた）
+		if (targetedEnemies.size() >= 3) {
+			m_bTrinityCheckMate = true;
+			m_bJibakuMate = false; // ★ 追加：通常の自爆フラグをキャンセルしてトリニティ勝利に
+			return;
+		}
+
+		// 自分の移動可能範囲を座標セット化（検索高速化のため）
+		auto isMyMoveArea = [&](int x, int y) {
+			for (const auto& c : *m_pvecCandidates) if (c.x == x && c.y == y) return true;
+			return false;
+			};
+
+		// 条件B: 新ルール（相手の移動範囲が自分の範囲に完全重複）
+		for (const auto& enemy : enemyRangeList)
+		{
+			// 敵が動けない(usable=false) or 移動範囲0の場合
+			if (!enemy.pPiece->GetUsable() || enemy.range.empty()) {
+				int ex, ey;
+				enemy.pPiece->GetPos(&ex, &ey);
+				if (isMyMoveArea(ex, ey)) { // 敵駒の位置自体が自分の射程内なら成立
+					m_bTrinityCheckMate = true;
+					m_bJibakuMate = false; // 通常の自爆フラグをキャンセル
+					break;
+				}
+			}
+			else {
+				// 移動範囲がある場合、その全マスが自分の射程内か
+				bool allCovered = true;
+				for (const auto& pos : enemy.range) {
+					if (!isMyMoveArea(pos.first, pos.second)) {
+						allCovered = false;
+						break;
+					}
+				}
+				if (allCovered) {
+					m_bTrinityCheckMate = true;
+					m_bJibakuMate = false; // 通常の自爆フラグをキャンセル
+					break;
+				}
+			}
+		}
+	}
 }
 
 bool CBoard::TurnEnd()
@@ -379,6 +480,133 @@ void CBoard::ResetState(CPiece* _pPiece)
 		if (_pPiece == (*m_pvecCandidates)[i].piece)
 		{
 			aSquare[(*m_pvecCandidates)[i].y][(*m_pvecCandidates)[i].x].SetState(CSquare::SQUARE_STATE::NORMAL);
+		}
+	}
+}
+
+// 配置フェーズ用の配置可能エリア計算・表示関数
+void CBoard::UpdateSetupAreas()
+{
+	// 現在のターンのプレイヤーID（味方）を取得
+	PLAYER_ID myID = CGameManager::GetInstance().GetTurn();
+
+	// 1. まず全マスを初期化する
+	for (int y = 0; y < MAX_BOARD_SIZE; ++y)
+	{
+		for (int x = 0; x < MAX_BOARD_SIZE; ++x)
+		{
+			// すでに別の駒があるマスは配置できないので NORMAL
+			if (aSquare[y][x].ExistPiece())
+			{
+				aSquare[y][x].SetState(CSquare::SQUARE_STATE::NORMAL);
+			}
+			else
+			{
+				// 一旦、すべての空きマスを配置可能（MOVABLE）とする
+				aSquare[y][x].SetState(CSquare::SQUARE_STATE::MOVABLE);
+			}
+		}
+	}
+
+	// 2. 敵の駒の行動範囲（射線）を計算し、危険地帯(NORMAL)として上書きする
+	for (int i = 0; i < PIECE_NUM; ++i)
+	{
+		CPiece* pPiece = m_pPieces[i];
+
+		// 使用不可（未配置）の駒、または「味方の駒」はスキップする
+		// ※これにより、味方の行動範囲は MOVABLE のまま維持されます
+		if (!pPiece->GetUsable() || pPiece->GetID() == myID)
+		{
+			continue;
+		}
+
+		// ここから敵の駒の行動範囲計算
+		int currentX, currentY;
+		pPiece->GetPos(&currentX, &currentY);
+
+		// 8方向の探索
+		for (int j = 0; j < 8; ++j)
+		{
+			int movement = pPiece->GetMovement(j);
+
+			for (int k = 0; k < movement; ++k)
+			{
+				int newX = currentX + aDirection[j][0] * (k + 1);
+				int newY = currentY + aDirection[j][1] * (k + 1);
+
+				// 盤面外ならこの方向の探索を終了
+				if (newX < 0 || newX >= MAX_BOARD_SIZE || newY < 0 || newY >= MAX_BOARD_SIZE) break;
+
+				// もし空きマスなら、そこは敵の射線なので配置不可(NORMAL)にする
+				if (!aSquare[newY][newX].ExistPiece())
+				{
+					aSquare[newY][newX].SetState(CSquare::SQUARE_STATE::NORMAL);
+				}
+				else
+				{
+					// 既存の駒（敵味方問わず）にぶつかったら、それより奥には射線が通らない
+					break;
+				}
+			}
+		}
+	}
+}
+
+// カーソル位置の配置判定とNOSETプレビュー表示
+void CBoard::UpdateSetupPreview()
+{
+	// 毎フレーム、一旦すべての配置可能エリア（NORMAL / MOVABLE）を最新状態にリセットする
+	UpdateSetupAreas();
+
+	// すでに配置がすべて終わっていれば何もしない
+	if (m_SetupIndex >= m_SetupOrder.size()) return;
+
+	int cx, cy;
+	m_Cursor->GetPos(&cx, &cy);
+
+	// 今配置しようとしている駒を取得
+	int pIdx = m_SetupOrder[m_SetupIndex].pieceIndex;
+	CPiece* pCurrentPiece = m_pPieces[pIdx];
+
+	// 描画と行動範囲計算のために、駒の内部座標をカーソルに合わせる
+	pCurrentPiece->Move(cx, cy);
+
+	// 基本判定：現在のカーソル位置が「配置可能（MOVABLE）」かどうか
+	m_bCanSet = (aSquare[cy][cx].GetState() == CSquare::SQUARE_STATE::MOVABLE);
+
+	PLAYER_ID myID = pCurrentPiece->GetID();
+
+	// カーソル位置に置いた場合の移動範囲を計算して、NOSETテクスチャを上書きする
+	for (int j = 0; j < 8; ++j)
+	{
+		int movement = pCurrentPiece->GetMovement(j);
+		for (int k = 0; k < movement; ++k)
+		{
+			int nx = cx + aDirection[j][0] * (k + 1);
+			int ny = cy + aDirection[j][1] * (k + 1);
+
+			if (nx < 0 || nx >= MAX_BOARD_SIZE) break;
+			if (ny < 0 || ny >= MAX_BOARD_SIZE) break;
+
+			// そのマスにすでに駒がある場合
+			if (aSquare[ny][nx].ExistPiece())
+			{
+				CPiece* pEncountered = aSquare[ny][nx].GetPiece();
+				// それが相手の駒なら、射線が通ってしまうため配置不可にする
+				if (pEncountered->GetID() != myID)
+				{
+					m_bCanSet = false;
+				}
+				// それが味方の駒なら、射線を止める
+				if (pEncountered->GetID() == myID)
+				{
+					break;
+				}
+
+			}
+
+			// 駒がない空きマスなら、NOSETステートにして赤くハイライトする
+			aSquare[ny][nx].SetState(CSquare::SQUARE_STATE::NOSET);
 		}
 	}
 }

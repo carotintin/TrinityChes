@@ -26,6 +26,9 @@ CSquare::CSquare()
 
 	HRESULT hr2 = LoadTextureFromFile(GetDevice(), "Texture/MovableBlue.png", &m_TexMovable);
 	if (FAILED(hr2)) { MessageBox(NULL, "Board", "Errorrrrr", MB_OK); };
+
+	HRESULT hr3 = LoadTextureFromFile(GetDevice(), "Texture/NoRed.png", &m_TexNoRed);
+	if (FAILED(hr3)) { MessageBox(NULL, "NoRed", "Errorrrrr", MB_OK); };
 }
 
 //デストラクタ
@@ -35,6 +38,12 @@ CSquare::~CSquare()
 	{
 		m_TexMovable->Release();
 		m_TexMovable = nullptr;
+	}
+
+	if (m_TexNoRed) 
+	{ 
+		m_TexNoRed->Release(); 
+		m_TexNoRed = nullptr; 
 	}
 
 	if (m_pVtx)
@@ -58,7 +67,14 @@ void CSquare::Draw(int x, int y)
 		DrawSprite(m_pVtx);
 	}
 
-	
+	else if (m_State == NOSET)
+	{
+		SetSpritePos(-350.0f + x * 100.0f, -350.0f + y * 100.0f);
+		SetSpriteScale(1.0f, 1.0f);
+		SetSpriteColor(1.0f, 1.0f, 1.0f, 0.6f); 
+		SetSpriteTexture(m_TexNoRed);
+		DrawSprite(m_pVtx);
+	}
 
 
 	if (m_pPiece)

@@ -50,7 +50,7 @@ void CPiece::Move(int x, int y)
 	m_PosX = x;
 	m_PosY = y;
 
-	m_bUsable = false;
+	//m_bUsable = false;
 }
 
 void CPiece::GetPos(int* x, int* y)

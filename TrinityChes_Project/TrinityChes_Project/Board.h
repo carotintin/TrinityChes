@@ -6,6 +6,7 @@
 #include "GameManager.h"
 #include <vector>
 #include "Cursor.h"
+#include <time.h>
 
 
 class CBoard
@@ -16,7 +17,7 @@ public:
 	void Draw();
 	void Update();
 
-	void FindMovableArea();
+	void FindMovableArea(bool bCheckMate = true);
 
 	bool TurnEnd();
 	void ResetTurnEnd();
@@ -28,6 +29,10 @@ public:
 private:
 	void MakeMovable(CPiece*);
 	void ResetState(CPiece*);
+	void UpdateSetupAreas();
+	void UpdateSetupPreview(); // プレビュー更新と配置判定を行う関数
+
+	bool m_bCanSet = false;    // 現在カーソルがある場所に配置可能かどうかのフラグ
 
 	CSquare  aSquare[MAX_BOARD_SIZE][MAX_BOARD_SIZE];
 	ID3D11Buffer* m_pVtx;	//頂点バッファ
@@ -42,8 +47,18 @@ private:
 	bool m_bTrinityCheckMate = false;
 	bool m_bJibakuMate = false;
 
+	struct SetupInfo
+	{
+		int pieceIndex;    // m_pPieces のインデックス
+		PLAYER_ID player;  // 誰の配置ターンか
+	};
+
+	std::vector<SetupInfo> m_SetupOrder;
+	int m_SetupIndex = 0; // 現在何番目の配置か
+
 	typedef enum
 	{
+		SETUP_PHASE,        // ← 追加：配置フェーズ
 		SELECT_PIECE,
 		SELECT_DESTINATION,
 	}SELECT_PHASE;
