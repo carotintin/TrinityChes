@@ -3,6 +3,7 @@
 #include "VertexBuffer.h"
 #include "DirectXTex/TextureLoad.h"
 #include "DirectX.h"
+#include "SoundManager.h"
 
 
 CCursor::CCursor()
@@ -53,22 +54,26 @@ void CCursor::Update()
 
 	if (CKeyBoard::GetInstance().IsKeyTrigger(VK_UP))
 	{
+		CSoundManager::GetInstance().PlaySE("MoveSE");
 		m_PosY--;
 		if (m_PosY < 0) m_PosY = 7;
 	}
 	if (CKeyBoard::GetInstance().IsKeyTrigger(VK_DOWN))
 	{
+		CSoundManager::GetInstance().PlaySE("MoveSE");
 		m_PosY++;
 		if (m_PosY > 7) m_PosY = 0;
 	}
 
 	if (CKeyBoard::GetInstance().IsKeyTrigger(VK_LEFT))
 	{
+		CSoundManager::GetInstance().PlaySE("MoveSE");
 		m_PosX--;
 		if (m_PosX < 0) m_PosX = 7;
 	}
 	if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RIGHT))
 	{
+		CSoundManager::GetInstance().PlaySE("MoveSE");
 		m_PosX++;
 		if (m_PosX > 7) m_PosX = 0;
 	}
@@ -76,6 +81,7 @@ void CCursor::Update()
 	if (CKeyBoard::GetInstance().IsKeyTrigger('Z') || CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN))
 	{
 		bPressed = true;
+		CSoundManager::GetInstance().PlaySE("EnterSE");
 	}
 
 

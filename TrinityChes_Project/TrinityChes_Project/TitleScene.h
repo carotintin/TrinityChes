@@ -38,6 +38,9 @@ private:
 	float m_StartTextAlpha;      // テキストの透明度
 	float m_StartTextAlphaSpeed; // 透明度の変化スピード
 
+	bool m_bPlayedLogoSE;
+	bool m_bPlayedTitleSE;
+
 	ID3D11Buffer* m_pVtxTitle;
 	ID3D11Buffer* m_pVtxStartText;
 

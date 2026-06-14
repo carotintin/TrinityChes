@@ -5,6 +5,7 @@
 #include "Rook.h"
 #include "KeyBoard.h"
 #include <Windows.h>
+#include "SoundManager.h"
 
 //コンストラクタ
 CGameManager::CGameManager()
@@ -22,7 +23,7 @@ void CGameManager::Init()
 {
 	m_Board = new CBoard(&m_vecCandidates);
 
-	
+	CSoundManager::GetInstance().PlayBGM("GameBGM");
 
 	Vertex vtx[] = {
 		{{ -960.0f, -540.0f, 0.0f }, { 0.0f, 0.0f }}, // 左上（Yマイナス、UV 0,0）
@@ -54,7 +55,7 @@ void CGameManager::Init()
 		{{ 400,  540, 0}, {1, 1}},
 	};
 	m_pVtxLogo = CreateVertexBuffer(vtxLogo, 4);
-	
+	bEndBGM = false;
 }
 
 void CGameManager::Uninit()
@@ -193,6 +194,13 @@ void CGameManager::Update()
 	// ==========================================
 	if (m_Board->GetCheckMate() || m_Board->GetJibakuMate())
 	{
+		if (!bEndBGM)
+		{
+			CSoundManager::GetInstance().StopBGM("GameBGM");
+			CSoundManager::GetInstance().PlaySE("GameOver");
+			bEndBGM = true;
+		}
+
 		// Rキーで初めからやり直し
 		if (CKeyBoard::GetInstance().IsKeyTrigger('R'))
 		{

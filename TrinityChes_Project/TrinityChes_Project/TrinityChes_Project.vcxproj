@@ -144,6 +144,7 @@
     <ClInclude Include="Rook.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="SoundManager.h" />
     <ClInclude Include="SpriteDrawer.h" />
     <ClInclude Include="Square.h" />
     <ClInclude Include="TitleScene.h" />
@@ -164,6 +165,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Rook.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="SpriteDrawer.cpp" />
     <ClCompile Include="Square.cpp" />
     <ClCompile Include="TitleScene.cpp" />

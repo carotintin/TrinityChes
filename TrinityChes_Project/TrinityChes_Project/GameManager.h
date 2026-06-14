@@ -57,6 +57,8 @@ private:
 	std::vector<MOVEMENT_CANDIDATE> m_vecCandidates;
 
 	PLAYER_ID m_Turn;
+
+	bool bEndBGM = false;
 };
 
 

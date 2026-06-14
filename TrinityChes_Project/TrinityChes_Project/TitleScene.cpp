@@ -3,6 +3,7 @@
 #include "SceneManager.h"
 #include "GameScene.h"
 #include <Windows.h>
+#include "SoundManager.h"
 
 CTitleScene::CTitleScene()
 	: m_TitleState(TITLE_LOGO), m_FadeState(FADE_IN), m_TitleAlpha(0.0f)
@@ -10,6 +11,8 @@ CTitleScene::CTitleScene()
 	, m_TexTitle(nullptr), m_TexRules(nullptr), m_TexControls(nullptr)
 	, m_pVtxStartText(nullptr), m_TexStartText(nullptr)
 	, m_StartTextAlpha(1.0f), m_StartTextAlphaSpeed(-0.01f) 
+	, m_bPlayedTitleSE(false)
+	, m_bPlayedLogoSE(false)
 {
 }
 
@@ -72,6 +75,13 @@ void CTitleScene::Update()
 	switch (m_TitleState)
 	{
 	case TITLE_LOGO: // フェードイン→待機→フェードアウト
+		if (!m_bPlayedLogoSE)
+		{
+			CSoundManager::GetInstance().PlaySE("LogoSE");
+			m_bPlayedLogoSE = true;
+		}
+
+
 		if (m_FadeState == FADE_IN) {
 			m_TitleAlpha += 0.015f;
 			if (m_TitleAlpha >= 1.0f) {
@@ -94,7 +104,9 @@ void CTitleScene::Update()
 		}
 
 		// Enterで強制スキップ
-		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN)) {
+		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN)) 
+		{
+			CSoundManager::GetInstance().StopSE("LogoSE");
 			m_TitleAlpha = 0.0f;
 			m_TitleState = TITLE_MAIN;
 			m_FadeState = FADE_IN;
@@ -102,9 +114,15 @@ void CTitleScene::Update()
 		break;
 
 	case TITLE_MAIN: // フェードインのみ
-		if (m_FadeState == FADE_IN) 
+		if (!m_bPlayedTitleSE)
 		{
-			m_TitleAlpha += 0.02f;
+			CSoundManager::GetInstance().PlaySE("TitleSE");
+			m_bPlayedTitleSE = true;
+		}
+
+		if (m_FadeState == FADE_IN)
+		{
+			m_TitleAlpha += 0.005f;
 			if (m_TitleAlpha >= 1.0f) m_TitleAlpha = 1.0f;
 		}
 
@@ -120,12 +138,14 @@ void CTitleScene::Update()
 
 		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN)) {
 			m_TitleState = TITLE_RULES;
+			CSoundManager::GetInstance().PlaySE("SetSE");
 		}
 		break;
 
 	case TITLE_RULES: // フェードなし
 		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN)) {
 			m_TitleState = TITLE_CONTROLS;
+			CSoundManager::GetInstance().PlaySE("SetSE");
 		}
 		break;
 
@@ -133,6 +153,7 @@ void CTitleScene::Update()
 		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN)) {
 			// 操作方法でEnterを押したらゲーム本編シーンへ移行
 			CSceneManager::GetInstance().ChangeScene(new CGameScene());
+			CSoundManager::GetInstance().PlaySE("SetSE");
 		}
 		break;
 	}

@@ -4,7 +4,7 @@
 #include "SpriteDrawer.h"
 #include "VertexBuffer.h"
 #include "Game.h" 
-
+#include "SoundManager.h"
 
 //●やること
 //１：OK　盤面の描画
@@ -138,6 +138,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		return 0;
 	}
 
+	CSoundManager::GetInstance().Init();
+
 	//  FPSの処理
 	DWORD oldTime;    // 前の実行時間
 	DWORD nowTime;    // 現在の時間
@@ -199,6 +201,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 	timeEndPeriod(1);
+	CSoundManager::GetInstance().Uninit();
 	UninitSpriteDrawer(); // 終了処理（UninitDirectXよりも前に追記
 	UninitDirectX();
 	
