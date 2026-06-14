@@ -104,7 +104,7 @@ void CTitleScene::Update()
 		}
 
 		// Enterで強制スキップ
-		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN)) 
+		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN) || CKeyBoard::GetInstance().IsKeyTrigger('Z'))
 		{
 			CSoundManager::GetInstance().StopSE("LogoSE");
 			m_TitleAlpha = 0.0f;
@@ -136,21 +136,21 @@ void CTitleScene::Update()
 			m_StartTextAlphaSpeed *= -1.0f; // 反転して濃くしていく
 		}
 
-		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN)) {
+		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN) || CKeyBoard::GetInstance().IsKeyTrigger('Z')) {
 			m_TitleState = TITLE_RULES;
 			CSoundManager::GetInstance().PlaySE("SetSE");
 		}
 		break;
 
 	case TITLE_RULES: // フェードなし
-		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN)) {
+		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN) || CKeyBoard::GetInstance().IsKeyTrigger('Z')) {
 			m_TitleState = TITLE_CONTROLS;
 			CSoundManager::GetInstance().PlaySE("SetSE");
 		}
 		break;
 
 	case TITLE_CONTROLS: // フェードなし
-		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN)) {
+		if (CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN) || CKeyBoard::GetInstance().IsKeyTrigger('Z')) {
 			// 操作方法でEnterを押したらゲーム本編シーンへ移行
 			CSceneManager::GetInstance().ChangeScene(new CGameScene());
 			CSoundManager::GetInstance().PlaySE("SetSE");

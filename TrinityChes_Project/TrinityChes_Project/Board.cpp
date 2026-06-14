@@ -338,6 +338,8 @@ void CBoard::FindMovableArea(bool bCheckMate)
 		for (int j = 0; j < 8; ++j)
 		{
 			int movement = pPiece->GetMovement(j);
+			bool bMoveBlocked = false; // 移動がブロックされたかどうかのフラグ
+
 			for (int k = 0; k < movement; ++k)
 			{
 				int nX = curX + aDirection[j][0] * (k + 1);
@@ -349,29 +351,41 @@ void CBoard::FindMovableArea(bool bCheckMate)
 
 				if (isMyPiece) {
 					// --- 自分の駒の処理 ---
-					myAllCoverage.insert({ nX, nY }); // 全駒の射程として記録
-					if (pPiece->GetUsable()) {
-						myMovableCoverage.insert({ nX, nY }); // 動ける駒の射程として記録
+
+					// まだブロックされていない場合のみカバー範囲として記録
+					if (!bMoveBlocked) {
+						myAllCoverage.insert({ nX, nY }); // 全駒の射程として記録
+						if (pPiece->GetUsable()) {
+							myMovableCoverage.insert({ nX, nY }); // 動ける駒の射程として記録
+						}
 					}
 
 					if (pTarget != nullptr) {
 						if (pTarget->GetID() != myID) {
-							// 敵を射程に捉えた
+							// 敵を射程に捉えた（貫通して複数カウント可能）
 							targetedEnemies.insert(pTarget);
 
-							// 動かせる駒の場合のみ、実際の移動先候補に追加
-							if (pPiece->GetUsable()) {
+							// 動かせる駒の場合のみ、実際の移動先候補に追加（ブロックされる前の最初の一つのみ）
+							if (!bMoveBlocked && pPiece->GetUsable()) {
 								m_TmpCandidate.piece = pPiece; m_TmpCandidate.x = nX; m_TmpCandidate.y = nY;
 								m_pvecCandidates->push_back(m_TmpCandidate);
 							}
-						}
-						break; // 敵味方問わず駒があれば奥へは行けない
-					}
 
-					// 空きマス。動かせる駒の場合のみ、移動先候補に追加
-					if (pPiece->GetUsable()) {
-						m_TmpCandidate.piece = pPiece; m_TmpCandidate.x = nX; m_TmpCandidate.y = nY;
-						m_pvecCandidates->push_back(m_TmpCandidate);
+							// 敵を貫通して奥の敵も探すため、移動はブロックするがループは抜けない
+							bMoveBlocked = true;
+						}
+						else {
+							// 味方の駒だった場合
+							// これ以上先へは行けないし、射線も通らないので完全に探索終了
+							break;
+						}
+					}
+					else {
+						// 空きマス。動かせる駒の場合のみ、移動先候補に追加
+						if (!bMoveBlocked && pPiece->GetUsable()) {
+							m_TmpCandidate.piece = pPiece; m_TmpCandidate.x = nX; m_TmpCandidate.y = nY;
+							m_pvecCandidates->push_back(m_TmpCandidate);
+						}
 					}
 				}
 				else {
@@ -382,14 +396,14 @@ void CBoard::FindMovableArea(bool bCheckMate)
 							// 本当の自爆（確殺）かどうかの判定
 							// パターン1：敵が「次に動ける(Usable=true)」なら、次のターンで食べられるので自爆
 							// パターン2：狙われている自分の駒が「今動かしたばかり(Usable=false)」なら、自分から入ったので自爆
-							// ※それ以外（敵は動けず、自分は次に逃げられる状態）ならセーフ！
+							// ※それ以外（敵は動けず、自分は次に逃げられる状態）ならセーフ
 							if (pPiece->GetUsable() || !pTarget->GetUsable())
 							{
 								m_bJibakuMate = true;
 								bFatalJibaku = true;
 							}
 						}
-						break;
+						break; // 敵の射線は貫通させない
 					}
 					currentRange.push_back({ nX, nY });
 				}
