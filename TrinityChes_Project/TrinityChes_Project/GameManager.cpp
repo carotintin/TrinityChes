@@ -7,6 +7,7 @@
 #include <Windows.h>
 #include "SoundManager.h"
 
+
 //コンストラクタ
 CGameManager::CGameManager()
 {

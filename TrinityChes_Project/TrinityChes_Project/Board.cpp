@@ -7,7 +7,8 @@
 #include "Rook.h"
 #include "Player.h"
 #include "GameManager.h"
-
+#include <utility>
+#include <set>
 
 
 //コンストラクタ
@@ -317,8 +318,11 @@ void CBoard::FindMovableArea(bool bCheckMate)
 	};
 	std::vector<EnemyRangeData> enemyRangeList;
 
-	// Usable（動ける）な敵による自爆かどうかを判定するローカルフラグ
 	bool bFatalJibaku = false;
+
+	// 【修正】自軍のカバー範囲を「動ける駒」と「全駒」で明確に分ける
+	std::set<std::pair<int, int>> myMovableCoverage; // 動ける自分の駒の射程
+	std::set<std::pair<int, int>> myAllCoverage;     // 動けない駒も含めた全自分の駒の射程
 
 	// ========================================================
 	// 1. 全駒の走査と移動可能範囲の計算
@@ -327,9 +331,6 @@ void CBoard::FindMovableArea(bool bCheckMate)
 	{
 		CPiece* pPiece = m_pPieces[i];
 		bool isMyPiece = (pPiece->GetID() == myID);
-
-		// 自分の駒でusableがfalseなら計算スキップ（ただし敵はusableに関わらず射線を計算）
-		if (isMyPiece && !pPiece->GetUsable()) continue;
 
 		int curX, curY;
 		pPiece->GetPos(&curX, &curY);
@@ -349,28 +350,38 @@ void CBoard::FindMovableArea(bool bCheckMate)
 
 				if (isMyPiece) {
 					// --- 自分の駒の処理 ---
+					myAllCoverage.insert({ nX, nY }); // 全駒の射程として記録
+					if (pPiece->GetUsable()) {
+						myMovableCoverage.insert({ nX, nY }); // 動ける駒の射程として記録
+					}
+
 					if (pTarget != nullptr) {
 						if (pTarget->GetID() != myID) {
 							// 敵を射程に捉えた（既存ルール：3駒判定用）
+							// 「本来の行動範囲」なので、動ける・動けないに関わらずターゲットに含める
 							targetedEnemies.insert(pTarget);
 
-							// 敵のいるマスまで移動候補に追加
-							m_TmpCandidate.piece = pPiece; m_TmpCandidate.x = nX; m_TmpCandidate.y = nY;
-							m_pvecCandidates->push_back(m_TmpCandidate);
+							// 動かせる駒の場合のみ、実際の移動先候補に追加
+							if (pPiece->GetUsable()) {
+								m_TmpCandidate.piece = pPiece; m_TmpCandidate.x = nX; m_TmpCandidate.y = nY;
+								m_pvecCandidates->push_back(m_TmpCandidate);
+							}
 						}
 						break; // 敵味方問わず駒があれば奥へは行けない
 					}
-					m_TmpCandidate.piece = pPiece; m_TmpCandidate.x = nX; m_TmpCandidate.y = nY;
-					m_pvecCandidates->push_back(m_TmpCandidate);
+
+					// 空きマス。動かせる駒の場合のみ、移動先候補に追加
+					if (pPiece->GetUsable()) {
+						m_TmpCandidate.piece = pPiece; m_TmpCandidate.x = nX; m_TmpCandidate.y = nY;
+						m_pvecCandidates->push_back(m_TmpCandidate);
+					}
 				}
 				else {
 					// --- 相手の駒の処理（自爆・新トリニティ判定用） ---
 					if (pTarget != nullptr) {
-						// 判定を行う時のみ自爆フラグを立てる
 						if (bCheckMate && pTarget->GetID() == myID)
 						{
 							m_bJibakuMate = true;
-							// その敵駒が「Usable（次に動ける状態）」なら致命的な自爆とする
 							if (pPiece->GetUsable())
 							{
 								bFatalJibaku = true;
@@ -389,10 +400,9 @@ void CBoard::FindMovableArea(bool bCheckMate)
 	// 2. 勝利条件（トリニティ）の最終判定
 	// ========================================================
 
-	// 勝敗判定を要求された時のみ判定を行う
 	if (bCheckMate)
 	{
-		// Usableな敵の射程に入った（致命的な自爆）場合のみ最優先で処理を終え、敗北とする
+		// 最優先：動ける敵の射程に入ってしまったら自爆敗北
 		if (bFatalJibaku)
 		{
 			return;
@@ -401,42 +411,52 @@ void CBoard::FindMovableArea(bool bCheckMate)
 		// 条件A: 既存ルール（敵を3駒以上射程に入れた）
 		if (targetedEnemies.size() >= 3) {
 			m_bTrinityCheckMate = true;
-			m_bJibakuMate = false; // ★ 追加：通常の自爆フラグをキャンセルしてトリニティ勝利に
+			m_bJibakuMate = false; // 通常の自爆フラグをキャンセル
 			return;
 		}
-
-		// 自分の移動可能範囲を座標セット化（検索高速化のため）
-		auto isMyMoveArea = [&](int x, int y) {
-			for (const auto& c : *m_pvecCandidates) if (c.x == x && c.y == y) return true;
-			return false;
-			};
 
 		// 条件B: 新ルール（相手の移動範囲が自分の範囲に完全重複）
 		for (const auto& enemy : enemyRangeList)
 		{
-			// 敵が動けない(usable=false) or 移動範囲0の場合
-			if (!enemy.pPiece->GetUsable() || enemy.range.empty()) {
-				int ex, ey;
-				enemy.pPiece->GetPos(&ex, &ey);
-				if (isMyMoveArea(ex, ey)) { // 敵駒の位置自体が自分の射程内なら成立
+			int ex, ey;
+			enemy.pPiece->GetPos(&ex, &ey);
+
+			if (!enemy.pPiece->GetUsable()) {
+				// ① 相手の駒が「動けない」場合
+				// あなたの指定ルール: 「動けない敵に、動ける自分の駒の移動可能範囲を入れられたときはOK」
+				// ※myMovableCoverage（動ける駒の射程）に入っているかだけをチェックする
+				if (myMovableCoverage.count({ ex, ey })) {
 					m_bTrinityCheckMate = true;
-					m_bJibakuMate = false; // 通常の自爆フラグをキャンセル
+					m_bJibakuMate = false;
 					break;
 				}
 			}
 			else {
-				// 移動範囲がある場合、その全マスが自分の射程内か
-				bool allCovered = true;
-				for (const auto& pos : enemy.range) {
-					if (!isMyMoveArea(pos.first, pos.second)) {
-						allCovered = false;
+				// ② 相手の駒が「動ける」場合
+				if (enemy.range.empty()) {
+					// 逃げ場が完全にない場合、本体が（動ける自軍の駒から）狙われていればアウト
+					if (myMovableCoverage.count({ ex, ey })) {
+						m_bTrinityCheckMate = true;
+						m_bJibakuMate = false;
 						break;
 					}
 				}
-				if (allCovered) {
-					m_bTrinityCheckMate = true;
-					m_bJibakuMate = false; // 通常の自爆フラグをキャンセル
-					break;
+				else {
+					// 移動先がある場合、その「全ての移動先（逃げ道）」が塞がれているかチェック
+					bool allCovered = true;
+					for (const auto& pos : enemy.range) {
+						// ※敵からすると「動けない自駒」の射程に飛び込んでも自爆（敗北）なので、
+						// 逃げ道が塞がれているかの判定には myAllCoverage（全軍の射程）を使います。
+						if (myAllCoverage.count(pos) == 0) {
+							allCovered = false;
+							break;
+						}
+					}
+					if (allCovered) {
+						m_bTrinityCheckMate = true;
+						m_bJibakuMate = false;
+						break;
+					}
 				}
 			}
 		}
