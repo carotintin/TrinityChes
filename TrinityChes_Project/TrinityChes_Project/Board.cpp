@@ -242,16 +242,14 @@ void CBoard::Update()
 				aSquare[prevY][prevX].SetPiece(nullptr);
 
 				// 駒を移動させる
-				m_pSelectedPiece->Move(x,y);
+				m_pSelectedPiece->Move(x, y);
 				// 盤面にも登録
 				aSquare[y][x].SetPiece(m_pSelectedPiece);
 
 				// 駒で塗った移動可能範囲を戻す
 				ResetState(m_pSelectedPiece);
 
-				// 全駒の移動可能範囲を計算しなおす＆チェックメイト判定
-				FindMovableArea();
-
+				
 				// 移動させた駒を使用不可＆使用不可だった自分の駒を使用可能に
 				for (int i = 0; i < PIECE_NUM; ++i)
 				{
@@ -260,14 +258,17 @@ void CBoard::Update()
 					{
 						if (m_pPieces[i] == m_pSelectedPiece)
 						{
-							m_pPieces[i]->SetUsable(false); // 動かした駒
+							m_pPieces[i]->SetUsable(false); // 今動かした駒
 						}
 						else
 						{
-							m_pPieces[i]->SetUsable(true);  //それ以外の自分の駒
+							m_pPieces[i]->SetUsable(true);  // それ以外の自分の駒
 						}
 					}
 				}
+
+				// 全駒の移動可能範囲を計算しなおす＆チェックメイト判定
+				FindMovableArea();
 
 				// ターン終了
 				m_bTurnEnd = true;
@@ -282,10 +283,9 @@ void CBoard::Update()
 				ResetState(m_pSelectedPiece);
 				m_SelectPhase = SELECT_PIECE;
 			}
-			
+
 		}
 		break;
-
 
 	default:
 		break;
@@ -294,8 +294,7 @@ void CBoard::Update()
 	
 }
 
-#include <utility>
-#include <set>
+
 
 
 void CBoard::FindMovableArea(bool bCheckMate)
@@ -320,7 +319,7 @@ void CBoard::FindMovableArea(bool bCheckMate)
 
 	bool bFatalJibaku = false;
 
-	// 【修正】自軍のカバー範囲を「動ける駒」と「全駒」で明確に分ける
+	// 自軍のカバー範囲を「動ける駒」と「全駒」で明確に分ける
 	std::set<std::pair<int, int>> myMovableCoverage; // 動ける自分の駒の射程
 	std::set<std::pair<int, int>> myAllCoverage;     // 動けない駒も含めた全自分の駒の射程
 
@@ -357,8 +356,7 @@ void CBoard::FindMovableArea(bool bCheckMate)
 
 					if (pTarget != nullptr) {
 						if (pTarget->GetID() != myID) {
-							// 敵を射程に捉えた（既存ルール：3駒判定用）
-							// 「本来の行動範囲」なので、動ける・動けないに関わらずターゲットに含める
+							// 敵を射程に捉えた
 							targetedEnemies.insert(pTarget);
 
 							// 動かせる駒の場合のみ、実際の移動先候補に追加
@@ -381,9 +379,13 @@ void CBoard::FindMovableArea(bool bCheckMate)
 					if (pTarget != nullptr) {
 						if (bCheckMate && pTarget->GetID() == myID)
 						{
-							m_bJibakuMate = true;
-							if (pPiece->GetUsable())
+							// 本当の自爆（確殺）かどうかの判定
+							// パターン1：敵が「次に動ける(Usable=true)」なら、次のターンで食べられるので自爆
+							// パターン2：狙われている自分の駒が「今動かしたばかり(Usable=false)」なら、自分から入ったので自爆
+							// ※それ以外（敵は動けず、自分は次に逃げられる状態）ならセーフ！
+							if (pPiece->GetUsable() || !pTarget->GetUsable())
 							{
+								m_bJibakuMate = true;
 								bFatalJibaku = true;
 							}
 						}
@@ -402,20 +404,19 @@ void CBoard::FindMovableArea(bool bCheckMate)
 
 	if (bCheckMate)
 	{
-		// 最優先：動ける敵の射程に入ってしまったら自爆敗北
+		// 最優先：自爆敗北が確定していればトリニティ判定は行わない
 		if (bFatalJibaku)
 		{
 			return;
 		}
 
-		// 条件A: 既存ルール（敵を3駒以上射程に入れた）
+		// 条件: 敵を3駒以上射程に入れた
 		if (targetedEnemies.size() >= 3) {
 			m_bTrinityCheckMate = true;
-			m_bJibakuMate = false; // 通常の自爆フラグをキャンセル
 			return;
 		}
 
-		// 条件B: 新ルール（相手の移動範囲が自分の範囲に完全重複）
+		// 条件:相手の移動範囲が自分の範囲に完全重複
 		for (const auto& enemy : enemyRangeList)
 		{
 			int ex, ey;
@@ -423,11 +424,8 @@ void CBoard::FindMovableArea(bool bCheckMate)
 
 			if (!enemy.pPiece->GetUsable()) {
 				// ① 相手の駒が「動けない」場合
-				// あなたの指定ルール: 「動けない敵に、動ける自分の駒の移動可能範囲を入れられたときはOK」
-				// ※myMovableCoverage（動ける駒の射程）に入っているかだけをチェックする
 				if (myMovableCoverage.count({ ex, ey })) {
 					m_bTrinityCheckMate = true;
-					m_bJibakuMate = false;
 					break;
 				}
 			}
@@ -437,7 +435,6 @@ void CBoard::FindMovableArea(bool bCheckMate)
 					// 逃げ場が完全にない場合、本体が（動ける自軍の駒から）狙われていればアウト
 					if (myMovableCoverage.count({ ex, ey })) {
 						m_bTrinityCheckMate = true;
-						m_bJibakuMate = false;
 						break;
 					}
 				}
@@ -445,16 +442,16 @@ void CBoard::FindMovableArea(bool bCheckMate)
 					// 移動先がある場合、その「全ての移動先（逃げ道）」が塞がれているかチェック
 					bool allCovered = true;
 					for (const auto& pos : enemy.range) {
-						// ※敵からすると「動けない自駒」の射程に飛び込んでも自爆（敗北）なので、
-						// 逃げ道が塞がれているかの判定には myAllCoverage（全軍の射程）を使います。
 						if (myAllCoverage.count(pos) == 0) {
 							allCovered = false;
 							break;
 						}
 					}
-					if (allCovered) {
+
+					// 【修正】逃げ道が塞がれているだけでなく、現在のマス（本体）も動ける駒から狙われている時だけトリニティ！
+					// （動かさずにその場に留まるという選択肢が安全なら、まだチェックメイトではないため）
+					if (allCovered && myMovableCoverage.count({ ex, ey })) {
 						m_bTrinityCheckMate = true;
-						m_bJibakuMate = false;
 						break;
 					}
 				}
