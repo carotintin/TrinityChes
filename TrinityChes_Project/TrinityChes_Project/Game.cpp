@@ -3,38 +3,29 @@
 #include "DirectXTex/TextureLoad.h"
 #include "DirectX.h"
 #include "Game.h"
-#include "Board.h"
-#include "GameManager.h"
-
-
-CGameManager* g_pGameManeger;
-
+#include "SceneManager.h" 
 
 //初期化処理
 bool InitGame()
 {
-	
-	CGameManager::GetInstance().Init();
+	CSceneManager::GetInstance().Init();
 	return true;
 }
 
 //終了処理
 void UninitGame()
 {
-	CGameManager::GetInstance().Uninit();
-
+	CSceneManager::GetInstance().Uninit();
 }
 
 //更新処理
 void UpdateGame()
 {
-	CGameManager::GetInstance().Update();
+	CSceneManager::GetInstance().Update();
 }
 
 //描画処理
 void DrawGame()
 {
-	CGameManager::GetInstance().Draw();
-
+	CSceneManager::GetInstance().Draw();
 }
-

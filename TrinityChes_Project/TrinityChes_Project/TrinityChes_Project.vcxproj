@@ -136,13 +136,17 @@
     <ClInclude Include="DirectX.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameManager.h" />
+    <ClInclude Include="GameScene.h" />
     <ClInclude Include="KeyBoard.h" />
     <ClInclude Include="King.h" />
     <ClInclude Include="Piece.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Rook.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneManager.h" />
     <ClInclude Include="SpriteDrawer.h" />
     <ClInclude Include="Square.h" />
+    <ClInclude Include="TitleScene.h" />
     <ClInclude Include="VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -152,14 +156,17 @@
     <ClCompile Include="DirectX.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="KeyBoard.cpp" />
     <ClCompile Include="King.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Piece.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Rook.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="SpriteDrawer.cpp" />
     <ClCompile Include="Square.cpp" />
+    <ClCompile Include="TitleScene.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
