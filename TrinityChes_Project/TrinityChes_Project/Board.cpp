@@ -22,6 +22,8 @@ CBoard::CBoard(std::vector<MOVEMENT_CANDIDATE> *_pvecCandidates)
 
 	m_Cursor = new CCursor();
 
+	m_bTurnEnd = false;
+
 	// 初期フェーズを SETUP_PHASE に変更
 	m_SelectPhase = SETUP_PHASE;
 	m_pvecCandidates = _pvecCandidates;
@@ -172,6 +174,10 @@ void CBoard::Update()
 					for (int i = 0; i < PIECE_NUM; ++i) {
 						m_pPieces[i]->SetUsable(true);
 					}
+
+					// 本編ゲーム開始時に、最初のターン（先攻）のプレイヤーに戻す
+					CGameManager::GetInstance().SetTurn(m_SetupOrder[0].player);
+
 					// ゲーム開始準備
 					m_SelectPhase = SELECT_PIECE;
 					FindMovableArea();

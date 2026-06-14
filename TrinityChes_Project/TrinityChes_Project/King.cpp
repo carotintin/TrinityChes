@@ -34,12 +34,12 @@ CKing::CKing(PLAYER_ID _ID)
 	switch (m_ID)
 	{
 	case PLAYER1:
-		hr = LoadTextureFromFile(GetDevice(), "Texture/HolyKing.PNG", &m_TexPiece);
+		hr = LoadTextureFromFile(GetDevice(), "Texture/DarkKing.PNG", &m_TexPiece);
 		if (FAILED(hr)) { MessageBox(NULL, "King", "Errorrrrr", MB_OK); };
 		break;
 
 	case PLAYER2:
-		hr = LoadTextureFromFile(GetDevice(), "Texture/DarkKing.PNG", &m_TexPiece);
+		hr = LoadTextureFromFile(GetDevice(), "Texture/HolyKing.PNG", &m_TexPiece);
 		if (FAILED(hr)) { MessageBox(NULL, "King", "Errorrrrr", MB_OK); };
 		break;
 	}

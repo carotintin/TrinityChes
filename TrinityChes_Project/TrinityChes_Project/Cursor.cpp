@@ -73,7 +73,7 @@ void CCursor::Update()
 		if (m_PosX > 7) m_PosX = 0;
 	}
 
-	if (CKeyBoard::GetInstance().IsKeyTrigger('Z'))
+	if (CKeyBoard::GetInstance().IsKeyTrigger('Z') || CKeyBoard::GetInstance().IsKeyTrigger(VK_RETURN))
 	{
 		bPressed = true;
 	}

@@ -37,12 +37,12 @@ CRook::CRook(PLAYER_ID _ID)
 	switch (m_ID)
 	{
 	case PLAYER1:
-		hr = LoadTextureFromFile(GetDevice(), "Texture/HolyRook.PNG", &m_TexPiece);
+		hr = LoadTextureFromFile(GetDevice(), "Texture/DarkRook.PNG", &m_TexPiece);
 		if (FAILED(hr)) { MessageBox(NULL, "Rook", "Errorrrrr", MB_OK); };
 		break;
 
 	case PLAYER2:
-		hr = LoadTextureFromFile(GetDevice(), "Texture/DarkRook.PNG", &m_TexPiece);
+		hr = LoadTextureFromFile(GetDevice(), "Texture/HolyRook.PNG", &m_TexPiece);
 		if (FAILED(hr)) { MessageBox(NULL, "Rook", "Errorrrrr", MB_OK); };
 		break;
 	}

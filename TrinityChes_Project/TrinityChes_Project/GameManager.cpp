@@ -22,13 +22,13 @@ void CGameManager::Init()
 {
 	m_Board = new CBoard(&m_vecCandidates);
 
-	m_Turn = PLAYER1;
+	
 
 	Vertex vtx[] = {
-		{{-800,-800,0,},{0,0}},
-		{{-800,800,0,},{0,1}},
-		{{800,-800,0,},{1,0}},
-		{{800,800,0,},{1,1}},
+		{{ -960.0f, -540.0f, 0.0f }, { 0.0f, 0.0f }}, // 左上（Yマイナス、UV 0,0）
+		{{ -960.0f,  540.0f, 0.0f }, { 0.0f, 1.0f }}, // 左下（Yプラス、UV 0,1）
+		{{  960.0f, -540.0f, 0.0f }, { 1.0f, 0.0f }}, // 右上（Yマイナス、UV 1,0）
+		{{  960.0f,  540.0f, 0.0f }, { 1.0f, 1.0f }}, // 右下（Yプラス、UV 1,1）
 	};
 
 	//頂点バッファの定義
@@ -104,18 +104,22 @@ void CGameManager::Uninit()
 //描画処理
 void CGameManager::Draw()
 {
-	
+	//盤面の描画
+
+	m_Board->Draw();
+
+
 	// --- プレイヤーターンロゴの描画 ---
 
 	// 現在のターンに合わせてテクスチャを選択
 	ID3D11ShaderResourceView* pCurrentTex = nullptr;
-	if (m_Turn == PLAYER1) 
+	if (m_Turn == PLAYER1)
 	{
-		pCurrentTex = m_TexPlayer2Turn;
+		pCurrentTex = m_TexPlayer1Turn; 
 	}
 	else
 	{
-		pCurrentTex = m_TexPlayer1Turn;
+		pCurrentTex = m_TexPlayer2Turn; 
 	}
 
 	// 選択したテクスチャをセット
@@ -152,9 +156,6 @@ void CGameManager::Draw()
 	SetSpritePos(-660.0f, 0.0f);
 	DrawSprite(m_pVtxLogo);
 
-	//盤面の描画
-
-	m_Board->Draw();
 
 	//盤面の描画
 	if (m_Board->GetCheckMate())
@@ -179,6 +180,13 @@ void CGameManager::Draw()
 void CGameManager::Update()
 {
 	CKeyBoard::GetInstance().KeyboardUpdate();
+
+	// スクロール
+	m_LogoUvOffset += 0.0025f;
+	if (m_LogoUvOffset > 1.0f)
+	{
+		m_LogoUvOffset -= 1.0f;
+	}
 
 	// ==========================================
 	// 勝敗が決まっている場合の処理
@@ -209,17 +217,15 @@ void CGameManager::Update()
 	//ターンが終わったら
 	if (m_Board->TurnEnd())
 	{
-		if (m_Turn == PLAYER1) m_Turn = PLAYER2;
-		else if (m_Turn == PLAYER2) m_Turn = PLAYER1;
+		// チェックメイト（または自爆メイト）ではない場合のみターンを交代する
+		if (!m_Board->GetCheckMate() && !m_Board->GetJibakuMate())
+		{
+			if (m_Turn == PLAYER1) m_Turn = PLAYER2;
+			else if (m_Turn == PLAYER2) m_Turn = PLAYER1;
+		}
+		// ----------------------------------------------------
 
 		m_Board->ResetTurnEnd();
-	}
-
-	// スクロール速度
-	m_LogoUvOffset += 0.0025f;
-	if (m_LogoUvOffset > 1.0f)
-	{
-		m_LogoUvOffset -= 1.0f;
 	}
 }
 

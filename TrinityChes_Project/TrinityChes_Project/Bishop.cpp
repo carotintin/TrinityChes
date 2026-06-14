@@ -39,12 +39,12 @@ CBishop::CBishop(PLAYER_ID _ID)
 	switch (m_ID)
 	{
 	case PLAYER1:
-		hr = LoadTextureFromFile(GetDevice(), "Texture/HolyBishop.PNG", &m_TexPiece);
+		hr = LoadTextureFromFile(GetDevice(), "Texture/DarkBishop.PNG", &m_TexPiece);
 		if (FAILED(hr)) { MessageBox(NULL, "Bishop", "Errorrrrr", MB_OK); };
 		break;
 
 	case PLAYER2:
-		hr = LoadTextureFromFile(GetDevice(), "Texture/DarkBishop.PNG", &m_TexPiece);
+		hr = LoadTextureFromFile(GetDevice(), "Texture/HolyBishop.PNG", &m_TexPiece);
 		if (FAILED(hr)) { MessageBox(NULL, "Bishop", "Errorrrrr", MB_OK); };
 		break;
 	}
